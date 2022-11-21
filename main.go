@@ -74,7 +74,7 @@ func myCustomBubbleteaMiddleware() wish.Middleware {
 		return p
 	}
 	teaHandler := func(s wish.Session) *tea.Program {
-    maincontent, err := os.ReadFile("main.md")
+    maincontent, err := os.ReadFile("heart.txt")
     if err != nil {
 		    fmt.Println("could not load file:", err)
 	      os.Exit(1)
@@ -92,6 +92,9 @@ func myCustomBubbleteaMiddleware() wish.Middleware {
 }
 
 var (
+  subtle = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
+  heart  = "  ,ad8PPPP88b,     ,d88PPPP8ba,   \n d8P\"      \"Y8b, ,d8P\"      \"Y8b \ndP'           \"8a8\"           `Yd\n8(              \"              )8\nI8                             8I\n Yb,                         ,dP \n  \"8a,                     ,a8\"  \n    \"8a,                 ,a8\"    \n      \"Yba             adP\"      \n        `Y8a         a8P'        \n          `88,     ,88'          \n            \"8b   d8\"            \n             \"8b d8\"             \n              `888'              \n                \""
+
 	titleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Right = "├"
@@ -107,6 +110,12 @@ var (
 		b.Left = "┤"
 		return titleStyle.Copy().BorderStyle(b)
 	}()
+
+  heartStyle = func() lipgloss.Style {
+    return lipgloss.NewStyle().
+			Padding(1, 3).
+      Foreground(lipgloss.Color("#FF0000"))
+  }()
 )
 
 
@@ -162,10 +171,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// we can initialize the viewport. The initial dimensions come in
 			// quickly, though asynchronously, which is why we wait for them
 			// here.
-			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
-			m.viewport.YPosition = headerHeight
+			m.viewport = viewport.New(msg.Width - 1, msg.Height-verticalMarginHeight)
 			m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
-			m.viewport.SetContent(m.maincontent)
+      dialog := lipgloss.Place(msg.Width - 3, max(21, msg.Height-verticalMarginHeight),
+  			lipgloss.Center, lipgloss.Center,
+  			heartStyle.Render(heart),
+  			lipgloss.WithWhitespaceChars("猫咪"),
+  			lipgloss.WithWhitespaceForeground(subtle),
+  		)
+      m.viewport.SetContent(dialog)
+
 			m.ready = true
 
 			// This is only necessary for high performance rendering, which in
@@ -174,6 +189,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Render the viewport one line below the header.
 			m.viewport.YPosition = headerHeight + 1
 		} else {
+      dialog := lipgloss.Place(msg.Width - 2, 21,
+  			lipgloss.Center, lipgloss.Center,
+  			heartStyle.Render(heart),
+  			lipgloss.WithWhitespaceChars("猫咪"),
+  			lipgloss.WithWhitespaceForeground(subtle),
+  		)
+      m.viewport.SetContent(dialog)
 			m.viewport.Width = msg.Width
 			m.viewport.Height = msg.Height - verticalMarginHeight
 		}
